@@ -60,7 +60,7 @@ Follow these steps to set up and run the project locally.
     ```
 
 3.  **Download Raw Data:**
-    This project requires the raw SAHIE CSV files. Place them inside the `input_files/` directory.
+    This project requires the raw SAHIE CSV files. Download the single-year estimates from the official [U.S. Census Bureau SAHIE website](https://www.census.gov/data/datasets/time-series/demo/sahie/estimates-acs.html) and place the CSV files inside an `input_files/` directory.
 
 ### Workflow
 

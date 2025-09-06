@@ -81,6 +81,9 @@ if st.sidebar.button('Run Simulation'):
 
     input_data = pd.DataFrame([[year, statefips, countyfips, agecat, racecat, sexcat, iprcat]], columns=features)
 
+    # Convert all columns to numeric for model prediction
+    input_data = input_data.apply(pd.to_numeric)
+
     # --- Model Prediction ---
     lgbm_model, dl_model, explainer = load_models_and_explainer()
     lgbm_pred = lgbm_model.predict(input_data)[0]

@@ -55,6 +55,7 @@ def load_data_and_scaler(path):
     df = pd.read_csv(path, compression='zip', dtype={"statefips": str, "countyfips": str})
     df['countyfips'] = df['countyfips'].str.zfill(5)
     df.dropna(subset=['county_name'], inplace=True)
+    df['county_name'] = df['county_name'].str.strip()
     
     # Fit a scaler on the entire feature set as a proxy for the original training data scaler
     features = ['year', 'statefips', 'countyfips', 'agecat', 'racecat', 'sexcat', 'iprcat']

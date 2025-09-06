@@ -54,8 +54,11 @@ def load_data_and_scaler(path):
     """Loads data, prepares it, and fits a scaler."""
     df = pd.read_csv(path, compression='zip', dtype={"statefips": str, "countyfips": str})
     df['countyfips'] = df['countyfips'].str.zfill(5)
+    
+    # Clean county_name column to remove NaNs, trailing spaces, and empty strings
     df.dropna(subset=['county_name'], inplace=True)
     df['county_name'] = df['county_name'].str.strip()
+    df = df[df['county_name'] != '']
     
     # Fit a scaler on the entire feature set as a proxy for the original training data scaler
     features = ['year', 'statefips', 'countyfips', 'agecat', 'racecat', 'sexcat', 'iprcat']

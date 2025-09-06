@@ -53,6 +53,8 @@ def load_data(path):
     df = pd.read_csv(path, compression='zip', dtype={"statefips": str, "countyfips": str})
     # Ensure FIPS codes are zero-padded
     df['countyfips'] = df['countyfips'].str.zfill(5)
+    # Remove rows with missing county names to prevent blank dropdown options
+    df.dropna(subset=['county_name'], inplace=True)
     return df
 
 df = load_data(PROCESSED_DATA_PATH)

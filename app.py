@@ -60,9 +60,9 @@ def load_data_and_scaler(path):
     df['county_name'] = df['county_name'].str.strip()
     df = df[df['county_name'] != '']
     
-    # Fit a scaler on the entire feature set as a proxy for the original training data scaler
-    features = ['year', 'statefips', 'countyfips', 'agecat', 'racecat', 'sexcat', 'iprcat']
-    scaler = StandardScaler().fit(df[features])
+    # Fit a scaler ONLY on the numeric features used by the model
+    numeric_features = ['year', 'statefips', 'countyfips', 'agecat', 'racecat', 'sexcat', 'iprcat']
+    scaler = StandardScaler().fit(df[numeric_features])
     
     return df, scaler
 
@@ -110,25 +110,34 @@ if st.sidebar.button('Run Simulation'):
 
     # --- Comparative Analysis ---
     st.subheader("Comparative Analysis")
+    st.markdown(f"Averages are shown for the **{age}** age group in the selected year for a more stable comparison.")
     
-    demo_filter = (
-        (df['agecat_label'] == age) & (df['racecat_label'] == race) &
-        (df['sexcat_label'] == sex) & (df['iprcat_label'] == income) &
+    # Use a broader filter for more reliable averages
+    broad_filter = (
+        (df['agecat_label'] == age) &
         (df['year'] == year)
     )
     
-    state_data = df[demo_filter & (df['state_name'] == state)]
-    national_data = df[demo_filter]
-    county_actual_df = df[demo_filter & (df['county_name'] == county)]
-
-    state_avg = state_data['PCTUI'].mean() if not state_data.empty else None
-    national_avg = national_data['PCTUI'].mean() if not national_data.empty else None
+    # State Average
+    state_avg = df[broad_filter & (df['state_name'] == state)]['PCTUI'].mean()
+    
+    # National Average
+    national_avg = df[broad_filter]['PCTUI'].mean()
+    
+    # Get actual county rate for the original, specific group if available
+    specific_filter = (
+        (df['agecat_label'] == age) & (df['racecat_label'] == race) &
+        (df['sexcat_label'] == sex) & (df['iprcat_label'] == income) &
+        (df['year'] == year) &
+        (df['county_name'] == county)
+    )
+    county_actual_df = df[specific_filter]
     county_actual = county_actual_df['PCTUI'].iloc[0] if not county_actual_df.empty else None
 
     col1, col2, col3 = st.columns(3)
-    col1.metric(f"Actual Rate in {county}", f"{county_actual:.2f}%" if county_actual is not None else "N/A")
-    col2.metric(f"State Average (for this group)", f"{state_avg:.2f}%" if state_avg is not None else "N/A")
-    col3.metric(f"National Average (for this group)", f"{national_avg:.2f}%" if national_avg is not None else "N/A")
+    col1.metric(f"Actual Rate in {county} (for specific group)", f"{county_actual:.2f}%" if county_actual is not None else "N/A")
+    col2.metric(f"State Average (for {age})", f"{state_avg:.2f}%" if pd.notna(state_avg) else "N/A")
+    col3.metric(f"National Average (for {age})", f"{national_avg:.2f}%" if pd.notna(national_avg) else "N/A")
 
     st.markdown("---")
 

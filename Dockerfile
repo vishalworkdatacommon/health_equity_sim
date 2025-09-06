@@ -4,12 +4,12 @@ FROM python:3.11-slim
 # Set the working directory in the container
 WORKDIR /app
 
-# Set the Streamlit home directory to a writable location
-# This prevents PermissionErrors on Hugging Face Spaces.
-ENV STREAMLIT_HOME=/app/.streamlit
-
 # Install system dependencies required by lightgbm
 RUN apt-get update && apt-get install -y libgomp1
+
+# Create a writable .streamlit directory and a config file to disable telemetry
+RUN mkdir -p /app/.streamlit
+RUN echo "[global]\nshowWarningOnDirectExecution = false\n[client]\nshowErrorDetails = false\n[browser]\ngatherUsageStats = false\n" > /app/.streamlit/config.toml
 
 # Copy the requirements file into the container at /app
 COPY requirements.txt .

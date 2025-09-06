@@ -12,7 +12,7 @@ ENV MPLCONFIGDIR=/app/.config/matplotlib
 RUN apt-get update && apt-get install -y libgomp1
 
 # Create a writable .streamlit directory and a config file to disable telemetry
-RUN mkdir -p /app/.streamlit
+RUN mkdir -p /app/.streamlit /app/.config/matplotlib
 RUN echo "[global]\nshowWarningOnDirectExecution = false\n[client]\nshowErrorDetails = false\n[browser]\ngatherUsageStats = false\n" > /app/.streamlit/config.toml
 
 # Copy the requirements file into the container at /app
@@ -23,6 +23,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application's code into the container at /app
 COPY . .
+
+# Change ownership of the app directory to the user
+RUN chown -R 1000:1000 /app
 
 # Make port 8501 available to the world outside this container
 EXPOSE 8501

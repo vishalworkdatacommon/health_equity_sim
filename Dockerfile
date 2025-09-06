@@ -5,6 +5,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Set the Streamlit home directory to a writable location
+# This prevents PermissionErrors on Hugging Face Spaces.
 ENV STREAMLIT_HOME=/app/.streamlit
 
 # Install system dependencies required by lightgbm

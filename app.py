@@ -87,6 +87,26 @@ if st.sidebar.button('Run Simulation'):
     
     st.markdown("---")
 
+    # --- Historical Trend Analysis ---
+    st.subheader(f"Historical Trend for {county}, {state}")
+    
+    # Filter data for the selected demographic group across all years
+    historical_data = df[
+        (df['county_name'] == county) &
+        (df['agecat_label'] == age) &
+        (df['racecat_label'] == race) &
+        (df['sexcat_label'] == sex) &
+        (df['iprcat_label'] == income)
+    ]
+    
+    if not historical_data.empty:
+        historical_data = historical_data.set_index('year')
+        st.line_chart(historical_data['PCTUI'])
+    else:
+        st.warning("No historical data available for the selected demographic combination.")
+
+    st.markdown("---")
+
     st.subheader('Why did the LightGBM model make this prediction?')
     
     # Calculate and display SHAP explanation

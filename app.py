@@ -9,29 +9,33 @@ import os
 import shap
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
+import zipfile
 
 # --- Configuration ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROCESSED_DATA_PATH = os.path.join(SCRIPT_DIR, 'sahie_processed.csv')
-LGB_MODEL_PATH = os.path.join(SCRIPT_DIR, 'lgbm_model.txt')
-DL_MODEL_PATH = os.path.join(SCRIPT_DIR, 'deep_learning_model.h5')
+ZIP_PATH = os.path.join(SCRIPT_DIR, 'models.zip')
 
 # --- Model and Explainer Loading ---
 @st.cache_resource
 def load_models_and_explainer():
-    """Loads the trained models and the SHAP explainer."""
-    # Load LightGBM model
-    lgbm = lgb.Booster(model_file=LGB_MODEL_PATH)
-    
-    # Load Deep Learning model
-    dl_model = load_model(DL_MODEL_PATH)
-    
+    """Loads the trained models and the SHAP explainer from a zip archive."""
+    with zipfile.ZipFile(ZIP_PATH, 'r') as z:
+        # Extract and load LightGBM model
+        with z.open('lgbm_model.txt') as f:
+            lgbm = lgb.Booster(model_str=f.read())
+        
+        # Extract and load Deep Learning model
+        with z.open('deep_learning_model.h5') as f:
+            # Save to a temporary file to load with Keras
+            with open("temp_dl_model.h5", "wb") as temp_f:
+                temp_f.write(f.read())
+            dl_model = load_model("temp_dl_model.h5")
+            os.remove("temp_dl_model.h5")
+
     # Create SHAP Explainer for the LightGBM model
     explainer = shap.TreeExplainer(lgbm)
     
     return lgbm, dl_model, explainer
-
-
 
 # --- Main App UI ---
 st.set_page_config(layout="wide")
@@ -42,8 +46,10 @@ st.sidebar.header('Simulation Parameters')
 # Load data for dropdowns
 @st.cache_data
 def load_data(path):
-    """Loads the processed data for UI elements."""
-    df = pd.read_csv(path)
+    """Loads the processed data for UI elements from a zip archive."""
+    with zipfile.ZipFile(path, 'r') as z:
+        with z.open('sahie_processed.csv') as f:
+            df = pd.read_csv(f)
     # Clean up state and county names to prevent mismatches
     if 'state_name' in df.columns:
         df['state_name'] = df['state_name'].str.strip()
@@ -55,7 +61,7 @@ def load_data(path):
         df = df[df['county_name'] != '']
     return df
 
-df = load_data(PROCESSED_DATA_PATH)
+df = load_data(ZIP_PATH)
 features = ['year', 'statefips', 'countyfips', 'agecat', 'racecat', 'sexcat', 'iprcat']
 
 # Create dropdowns for user input

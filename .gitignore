@@ -19,3 +19,6 @@ mlruns/
 # These should be downloaded by the user separately.
 input_files/
 *.csv
+deep_learning_model.h5
+lgbm_model.txt
+sahie_processed.csv
